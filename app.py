@@ -1,7 +1,7 @@
 from flask import Flask,render_template,url_for,request,flash,redirect,make_response
 from dotenv import load_dotenv
 from flask_wtf import FlaskForm,CSRFProtect
-from wtforms import StringField,EmailField,PasswordField,SubmitField
+from wtforms import StringField,EmailField,PasswordField,SubmitField,TextAreaField
 from wtforms.validators import Email,EqualTo,InputRequired,Length
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -150,17 +150,30 @@ def test():
     response=make_response("Hello world")
     return response
 #add notes route
-app.route('/create_note',methods=["POST","GET"])
+@app.route('/create_note',methods=["POST","GET"])
 def create_note():
-    return render_template("create_note.html")
+    form=NoteForm()
+    if form.validate_on_submit():
+        title=form.title.data
+        body=form.body.data
+        note=Notes(title=title,body=body)
+        db.session.add(note)
+        db.session.commit()
+        return redirect(url_for('view_notes'))
+
+    return render_template("create_note.html",form=form)
 #update notes route
-app.route('/update_note',methods=["POST","GET"])
+@app.route('/update_note',methods=["POST","GET"])
 def update_note():
     return render_template("update_note.html")
 #delete note route
-app.route('/delete_note',methods=["POST","GET"])
+@app.route('/delete_note',methods=["POST","GET"])
 def delete_note():
     return render_template("delete_note.html")
+@app.route('/view_notes',methods=["POST","GET"])
+def view_notes():
+    notes=Notes.query.all()
+    return render_template("view_notes.html",notes=notes)
 #strong password validator
 def strong_passsword(form,field):
     password=field.data
@@ -189,7 +202,11 @@ class LoginForm(FlaskForm):
     username=StringField("Username",validators=[InputRequired()])
     password=PasswordField("Password",validators=[InputRequired()])
     submit=SubmitField("Login")
-
+#notes form
+class NoteForm(FlaskForm):
+    title=StringField("Title",validators=[InputRequired(),Length(min=4)])
+    body=TextAreaField("Body",validators=[InputRequired(),Length(min=4)])
+    submit=SubmitField("Save note")
 #database models
 #table for users
 class User(db.Model):
@@ -197,10 +214,18 @@ class User(db.Model):
     username=db.Column(db.String(50),nullable=False,unique=True)
     email=db.Column(db.String(100),nullable=False,unique=True)
     password=db.Column(db.String(255),nullable=False)
+    #connect notes to author/writer
+    notes=db.relationship("Notes",back_populates="author")
 #table for notes
-# class Notes(db.Model):
-#     notes_id=db.Column(db.Integer,db.Fo)
-
+class Notes(db.Model):
+    notes_id=db.Column(db.Integer,primary_key=True)
+    title=db.Column(db.String(50),nullable=False)
+    body=db.Column(db.Text,nullable=False)
+    #user id points to primary key in User table
+    user_id=db.Column(db.Integer,db.ForeignKey("user.id"))
+    #connect note and User tables ie know who owns which note
+    author=db.relationship("User",back_populates="notes")
+print(app.url_map)
 if __name__=="__main__":
     with app.app_context():
         db.create_all()

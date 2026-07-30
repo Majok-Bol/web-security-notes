@@ -1,16 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create note</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Create note page</h1>
-    <form>
-
+    <form method="post">
+      {{form.hidden_tag()}}
+      <div><p>{{form.title.label}}{{form.title()}}</p></div>
+      <div>
+        <p>{{form.body.label}}{{form.body()}}</p>
+      </div>
+      <div><p>{{form.submit()}}</p></div>
     </form>
+
     <a href="{{url_for('home')}}">Home</a>
     <a href="{{url_for('dashboard')}}">Dashboard</a>
-</body>
+  </body>
 </html>
