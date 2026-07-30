@@ -149,11 +149,24 @@ def logout():
 def test():
     response=make_response("Hello world")
     return response
-
+#add notes route
+app.route('/create_note',methods=["POST","GET"])
+def create_note():
+    return render_template("create_note.html")
+#update notes route
+app.route('/update_note',methods=["POST","GET"])
+def update_note():
+    return render_template("update_note.html")
+#delete note route
+app.route('/delete_note',methods=["POST","GET"])
+def delete_note():
+    return render_template("delete_note.html")
 #strong password validator
 def strong_passsword(form,field):
     password=field.data
     print("Password: ",password)
+    if len(password)<8:
+        print("Password must be atleast 8 characters long")
     if not re.search(r"[A-Z]",password):
         print("Password must contain atleast one uppercase letter")
     if not re.search(r"[a-z]",password):
