@@ -96,7 +96,7 @@ def login():
         #check if username is not available
         user=User.query.filter_by(username=username).first()
         if not user or not bcrypt.check_password_hash(user.password,password):
-            print("Invalid username or password","warning")
+            print("Invalid username or password")
             return redirect(url_for('login'))
         #create access token
         access_token=create_access_token(identity=str(user.id))
@@ -113,9 +113,28 @@ def dashboard():
     user_id=get_jwt_identity()
     print("User id: ",user_id)
     user=db.session.get(User,int(user_id))
+    print("User: ",user)
     if not user:
         return redirect(url_for("login"))
     return render_template("dashboard.html",user=user)
+#customize jwt errors
+#ie no token provided in the request
+@jwt.unauthorized_loader
+def missing_token_callback(reason):
+    print("Reason: ",reason)
+    return redirect(url_for("login"))
+#invalid token provided
+@jwt.invalid_token_loader
+def invalid_token_callback(reason):
+    print("Reason: ",reason)
+    return redirect(url_for("login"))
+#token provided but has expired
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header,jwt_payload):
+    # print("Reason: ",reason)
+    print("JWT Header: ",jwt_header)
+    print("JWT payload: ",jwt_payload)
+    return redirect(url_for("login"))
 @app.route("/logout",methods=["POST","GET"])
 def logout():
     response=make_response(redirect(url_for("login")))
