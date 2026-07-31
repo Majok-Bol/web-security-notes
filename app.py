@@ -151,40 +151,56 @@ def test():
     return response
 #add notes route
 @app.route('/create_note',methods=["POST","GET"])
+@jwt_required()
 def create_note():
     form=NoteForm()
     if form.validate_on_submit():
         title=form.title.data
         body=form.body.data
-        note=Notes(title=title,body=body)
+        user_id=int(get_jwt_identity())
+        note=Notes(title=title,body=body,user_id=user_id)
         db.session.add(note)
         db.session.commit()
         return redirect(url_for('view_notes'))
 
     return render_template("create_note.html",form=form)
 #update notes route
-# @app.route('/update_note/<int:user_id>',methods=["POST","GET"])
-# def update_note(user_id):
-#     note_to_update=Notes.query.get_or_404(user_id)
-#     if request.method=="POST":
-#         note_to_update.
-#     return render_template("update_note.html")
-#delete note route
-@app.route('/delete_note/<int:user_id>',methods=["POST","GET"])
-def delete_note(user_id):
-    task_to_delete=Notes.query.get_or_404(user_id)
-    try:
-        db.session.delete(task_to_delete)
+@app.route('/update_note/<int:note_id>',methods=["POST","GET"])
+@jwt_required()
+def update_note(note_id):
+    user_id=int(get_jwt_identity())
+    print("User id for note to update: ",user_id)
+    note_to_update=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
+    print("Note to delete: ",note_to_update)
+    form=NoteForm(obj=note_to_update)
+    form.submit.label.text="Update Note"
+    print("Form: ",form)
+    if form.validate_on_submit():
+        note_to_update.title=form.title.data
+        print("Title: ",note_to_update.title)
+        note_to_update.body=form.body.data
+        print("Body: ",note_to_update.body)
         db.session.commit()
-        return redirect('/')
-    except:
-        return 'There was an error deleting note'
-
-    return render_template("delete_note.html")
+        return redirect(url_for("view_notes"))
+    return render_template("update_note.html",form=form,note_to_update=note_to_update)
+#delete note route
+@app.route('/delete_note/<int:note_id>',methods=["POST"])
+@jwt_required()
+def delete_note(note_id):
+    user_id=int(get_jwt_identity())
+    print("User id: ",user_id)
+    task_to_delete=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
+    db.session.delete(task_to_delete)
+    db.session.commit()
+    return redirect(url_for("view_notes"))
 @app.route('/view_notes',methods=["POST","GET"])
+@jwt_required()
 def view_notes():
-    notes=Notes.query.all()
-    return render_template("view_notes.html",notes=notes)
+    user_id=int(get_jwt_identity())
+    print("User id: ",user_id)
+    notes=Notes.query.filter_by(user_id=user_id).all()
+    delete_form=DeleteForm()
+    return render_template("view_notes.html",delete_form=delete_form,notes=notes)
 #strong password validator
 def strong_passsword(form,field):
     password=field.data
@@ -218,6 +234,10 @@ class NoteForm(FlaskForm):
     title=StringField("Title",validators=[InputRequired(),Length(min=4)])
     body=TextAreaField("Body",validators=[InputRequired(),Length(min=4)])
     submit=SubmitField("Save note")
+
+#delete form
+class DeleteForm(FlaskForm):
+    submit=SubmitField("Delete")
 #database models
 #table for users
 class User(db.Model):

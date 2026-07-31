@@ -9,15 +9,23 @@
     <h1>Saved notes</h1>
 
     <div>
+        {%if notes%}
         {%for saved_note in notes%}
         <div>
       
         <h1>{{saved_note.title}}</h1>
         <p>{{saved_note.body}}</p>
-        <a>href="/delete_note/{{notes.id}}">Delete note</a>
-              
+        <a href="{{url_for('update_note',note_id=saved_note.notes_id)}}">Edit</a>
+        <form action="{{url_for('delete_note',note_id=saved_note.notes_id)}}" method="POST">
+            {{delete_form.hidden_tag()}}
+            <button type="submit">Delete</button>
+        </form>
+
         </div>
         {%endfor%}
+        {%else%}
+        <p>No notes yet</p>
+        {%endif%}
     </div>
         <a href="{{url_for('home')}}">Home</a>
     <a href="{{url_for('dashboard')}}">Dashboard</a>
