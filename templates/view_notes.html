@@ -12,8 +12,9 @@
         {%for saved_note in notes%}
         <div>
       
-        <p>{{saved_note.title}}</p>
+        <h1>{{saved_note.title}}</h1>
         <p>{{saved_note.body}}</p>
+        <a>href="/delete_note/{{notes.id}}">Delete note</a>
               
         </div>
         {%endfor%}

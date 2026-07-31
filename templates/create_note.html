@@ -9,9 +9,9 @@
     <h1>Create note page</h1>
     <form method="post">
       {{form.hidden_tag()}}
-      <div><p>{{form.title.label}}{{form.title()}}</p></div>
+      <div><h1>{{form.title.label}}{{form.title()}}</h1></div>
       <div>
-        <p>{{form.body.label}}{{form.body()}}</p>
+        <h2>{{form.body.label}}{{form.body()}}</h2>
       </div>
       <div><p>{{form.submit()}}</p></div>
     </form>

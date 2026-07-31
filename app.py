@@ -163,12 +163,23 @@ def create_note():
 
     return render_template("create_note.html",form=form)
 #update notes route
-@app.route('/update_note',methods=["POST","GET"])
-def update_note():
-    return render_template("update_note.html")
+# @app.route('/update_note/<int:user_id>',methods=["POST","GET"])
+# def update_note(user_id):
+#     note_to_update=Notes.query.get_or_404(user_id)
+#     if request.method=="POST":
+#         note_to_update.
+#     return render_template("update_note.html")
 #delete note route
-@app.route('/delete_note',methods=["POST","GET"])
-def delete_note():
+@app.route('/delete_note/<int:user_id>',methods=["POST","GET"])
+def delete_note(user_id):
+    task_to_delete=Notes.query.get_or_404(user_id)
+    try:
+        db.session.delete(task_to_delete)
+        db.session.commit()
+        return redirect('/')
+    except:
+        return 'There was an error deleting note'
+
     return render_template("delete_note.html")
 @app.route('/view_notes',methods=["POST","GET"])
 def view_notes():
@@ -225,7 +236,7 @@ class Notes(db.Model):
     user_id=db.Column(db.Integer,db.ForeignKey("user.id"))
     #connect note and User tables ie know who owns which note
     author=db.relationship("User",back_populates="notes")
-print(app.url_map)
+# print(app.url_map)
 if __name__=="__main__":
     with app.app_context():
         db.create_all()
