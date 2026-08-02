@@ -13,10 +13,13 @@ from flask_jwt_extended import(
     JWTManager,
     set_access_cookies,
     jwt_required,
-    unset_jwt_cookies
+    unset_jwt_cookies,
+    set_refresh_cookies,
+    create_refresh_token
 )
 import os
 import re
+from datetime import timedelta
 load_dotenv()
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']=os.getenv("DATABASE_URL")
@@ -41,6 +44,12 @@ app.config['JWT_COOKIE_HTTPONLY']=False #true in production
 # app.config['JWT_ACCESS_TOKEN_EXPIRES']=timedelta(minutes=10)
 #samesite cookie setting
 app.config['JWT_COOKIE_SAMESITE']='Lax' #Strict for production
+#add JWT refresh token
+#solves problem of token expiration
+#user doesnt have to login again
+#instead they use refresh token and stays logged in
+app.config['JWT_ACCESS_TOKEN_EXPIRES']=timedelta(minutes=15)
+app.config['JWT_REFRESH_TOKEN_EXPIRES']=timedelta(days=30)
 #enable 
 #initialize app with local database ie sqlite
 db=SQLAlchemy(app)
@@ -101,10 +110,16 @@ def login():
         #create access token
         access_token=create_access_token(identity=str(user.id))
         print("Access token: ",access_token)
+        refresh_token=create_refresh_token(identity=str(user.id))
+        print("Refresh token: ",refresh_token)
+     
         #redirect to dashboard after successful login credentials
         response=make_response(redirect(url_for("dashboard")))
         #set cookies
         set_access_cookies(response,access_token)
+        print("Set access cookies: ",set_access_cookies)
+        set_refresh_cookies(response,refresh_token)
+        print("Set fresh cookie: ",set_refresh_cookies)
         return response
     return render_template("login.html",form=form)
 @app.route("/dashboard",methods=["POST","GET"])
@@ -164,6 +179,14 @@ def create_note():
         return redirect(url_for('view_notes'))
 
     return render_template("create_note.html",form=form)
+@app.route("/refresh",methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    user_id=get_jwt_identity()
+    access_token=create_access_token(identity=user_id)
+    response=make_response(redirect(url_for("home")))
+    set_access_cookies(response,access_token)
+    return response
 #update notes route
 @app.route('/update_note/<int:note_id>',methods=["POST","GET"])
 @jwt_required()
@@ -173,6 +196,8 @@ def update_note(note_id):
     note_to_update=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
     print("Note to delete: ",note_to_update)
     form=NoteForm(obj=note_to_update)
+     # or form.title.data=note_to_update.title
+     #  form.body.data=note_to_update.body
     form.submit.label.text="Update Note"
     print("Form: ",form)
     if form.validate_on_submit():
