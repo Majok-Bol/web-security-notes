@@ -1,19 +1,11 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Update note</title>
-  </head>
-  <body>
-    <h1>Update note page</h1>
-    <form method="POST">
-      {{form.hidden_tag()}}
-      <p>{{form.title.label}}{{form.title()}}</p>
-      <p>{{form.body.label}}{{form.body()}}</p>
-      <p>{{form.submit()}}</p>
-    </form>
-    <a href="{{url_for('home')}}">Home</a>
-    <a href="{{url_for('dashboard')}}">Dashboard</a>
-  </body>
-</html>
+{%extends 'base.html'%} {%block title%}Update note{%endblock%} {%block content%}
+<h1>Update note page</h1>
+<form method="POST">
+  {{form.hidden_tag()}}
+  <p>{{form.title.label}}{{form.title()}}</p>
+  <p>{{form.body.label}}{{form.body()}}</p>
+  <p>{{form.submit()}}</p>
+</form>
+<a href="{{url_for('home')}}">Home</a>
+<a href="{{url_for('dashboard')}}">Dashboard</a>
+{%endblock%}

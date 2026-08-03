@@ -1,16 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard page</h1>
-    <p>Welcome <strong> {{user.username}}</strong> to your dashboard</p>
-    <a href="{{url_for('create_note')}}">Create note</a>
-    <a href="{{url_for('view_notes')}}">View saved notes</a>
-  <a href="{{url_for('home')}}">Home</a>
-    
-</body>
-</html>
+{%extends 'base.html'%} {%block title%}Dashboard{%endblock%} {%block content%}
+<h1>Dashboard page</h1>
+<p>Welcome <strong> {{user.username}}</strong> to your dashboard</p>
+<a href="{{url_for('create_note')}}">Create note</a>
+<a href="{{url_for('view_notes')}}">View saved notes</a>
+<a href="{{url_for('home')}}">Home</a>
+{%endblock%}
