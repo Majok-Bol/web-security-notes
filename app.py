@@ -1,4 +1,4 @@
-from flask import Flask,render_template,url_for,request,flash,redirect,make_response
+from flask import Flask,render_template,url_for,flash,redirect,make_response
 from dotenv import load_dotenv
 from flask_wtf import FlaskForm,CSRFProtect
 from wtforms import StringField,EmailField,PasswordField,SubmitField,TextAreaField
@@ -80,13 +80,13 @@ def register():
         user_exists=User.query.filter_by(username=username).first()
         # print("Username exists: ",user_exists)
         if user_exists:
-            # print("Username not available")
+            flash("Username not available","warning")
             return redirect(url_for("register"))
         #check if email already exists
         email_exists=User.query.filter_by(email=email).first()
         # print("Email exists: ",email_exists)
         if email_exists:
-            # print("Email address not available")
+            flash("Email address not available","warning")
             return redirect(url_for("register"))
         hashed_password=bcrypt.generate_password_hash(password).decode("utf-8")
         #add user to the database
@@ -200,6 +200,7 @@ def update_note(note_id):
         note_to_update.body=form.body.data
         # print("Body: ",note_to_update.body)
         db.session.commit()
+        flash("Note updated successfully","success")
         return redirect(url_for("view_notes"))
     return render_template("update_note.html",form=form,note_to_update=note_to_update)
 #delete note route
@@ -211,6 +212,7 @@ def delete_note(note_id):
     task_to_delete=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
     db.session.delete(task_to_delete)
     db.session.commit()
+    flash("Note updated successfully","success")
     return redirect(url_for("view_notes"))
 @app.route('/view_notes',methods=["POST","GET"])
 @jwt_required()
