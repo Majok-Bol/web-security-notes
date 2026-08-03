@@ -1,0 +1,114 @@
+why does git still track .env file while i have this .gitnore file;
+# =========================
+# Environment files
+# =========================
+
+# Ignore all .env files (real environment files)
+.env
+.env.local
+.env.*.local
+
+# Keep the example file tracked
+!.env.example
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+notes_env/
+jwt_env/
+users_data_env/
+# Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+*.ipynb_checkpoints
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data files (customize based on your needs)
+*.csv
+*.xlsx
+*.xls
+*.db
+*.sqlite
+*.sqlite3
+users.csv
+orders.csv
+order_items.csv
+payments.csv
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+# =========================
+# Node.js
+# =========================
+node_modules/
+
+# =========================
+# Python / Jupyter
+# =========================
+docker-compose.override.yml
+
+Misc
+
+*.swp
+*.swo
+Build Artifacts
+
+build/
+dist/
+*.egg-info/
