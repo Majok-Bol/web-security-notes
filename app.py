@@ -212,7 +212,7 @@ def delete_note(note_id):
     task_to_delete=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
     db.session.delete(task_to_delete)
     db.session.commit()
-    flash("Note updated successfully","success")
+    flash("Note deleted","warning")
     return redirect(url_for("view_notes"))
 @app.route('/view_notes',methods=["POST","GET"])
 @jwt_required()
