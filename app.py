@@ -2,13 +2,12 @@ from flask import Flask,render_template,url_for,request,flash,redirect,make_resp
 from dotenv import load_dotenv
 from flask_wtf import FlaskForm,CSRFProtect
 from wtforms import StringField,EmailField,PasswordField,SubmitField,TextAreaField
-from wtforms.validators import Email,EqualTo,InputRequired,Length
+from wtforms.validators import Email,EqualTo,InputRequired,Length,ValidationError
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_jwt_extended import(
     create_access_token,
-    current_user,
     get_jwt_identity,
     JWTManager,
     set_access_cookies,
@@ -79,21 +78,22 @@ def register():
         password=form.password.data
         #check if username already exists
         user_exists=User.query.filter_by(username=username).first()
-        print("Username exists: ",user_exists)
+        # print("Username exists: ",user_exists)
         if user_exists:
-            print("Username not available")
+            # print("Username not available")
             return redirect(url_for("register"))
         #check if email already exists
         email_exists=User.query.filter_by(email=email).first()
-        print("Email exists: ",email_exists)
+        # print("Email exists: ",email_exists)
         if email_exists:
-            print("Email address not available")
+            # print("Email address not available")
             return redirect(url_for("register"))
         hashed_password=bcrypt.generate_password_hash(password).decode("utf-8")
         #add user to the database
         user=User(username=username,email=email,password=hashed_password)
         db.session.add(user)
         db.session.commit()
+        flash("Account created successfully","success")
         return redirect(url_for('login'))
     return render_template("register.html",form=form)
 @app.route("/login",methods=["POST","GET"])
@@ -105,30 +105,30 @@ def login():
         #check if username is not available
         user=User.query.filter_by(username=username).first()
         if not user or not bcrypt.check_password_hash(user.password,password):
-            print("Invalid username or password")
+            flash("Invalid username or password","error")
             return redirect(url_for('login'))
         #create access token
         access_token=create_access_token(identity=str(user.id))
-        print("Access token: ",access_token)
+        # print("Access token: ",access_token)
         refresh_token=create_refresh_token(identity=str(user.id))
-        print("Refresh token: ",refresh_token)
+        # print("Refresh token: ",refresh_token)
      
         #redirect to dashboard after successful login credentials
         response=make_response(redirect(url_for("dashboard")))
         #set cookies
         set_access_cookies(response,access_token)
-        print("Set access cookies: ",set_access_cookies)
+        # print("Set access cookies: ",set_access_cookies)
         set_refresh_cookies(response,refresh_token)
-        print("Set fresh cookie: ",set_refresh_cookies)
+        # print("Set fresh cookie: ",set_refresh_cookies)
         return response
     return render_template("login.html",form=form)
 @app.route("/dashboard",methods=["POST","GET"])
 @jwt_required()
 def dashboard():
     user_id=get_jwt_identity()
-    print("User id: ",user_id)
+    # print("User id: ",user_id)
     user=db.session.get(User,int(user_id))
-    print("User: ",user)
+    # print("User: ",user)
     if not user:
         return redirect(url_for("login"))
     return render_template("dashboard.html",user=user)
@@ -136,34 +136,28 @@ def dashboard():
 #ie no token provided in the request
 @jwt.unauthorized_loader
 def missing_token_callback(reason):
-    print("Reason: ",reason)
+    # print("Reason: ",reason)
     return redirect(url_for("login"))
 #invalid token provided
 @jwt.invalid_token_loader
 def invalid_token_callback(reason):
-    print("Reason: ",reason)
+    # print("Reason: ",reason)
     return redirect(url_for("login"))
 #token provided but has expired
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header,jwt_payload):
     # print("Reason: ",reason)
-    print("JWT Header: ",jwt_header)
-    print("JWT payload: ",jwt_payload)
+    # print("JWT Header: ",jwt_header)
+    # print("JWT payload: ",jwt_payload)
     return redirect(url_for("login"))
 @app.route("/logout",methods=["POST","GET"])
 def logout():
     response=make_response(redirect(url_for("login")))
     #remove jwt cookies
     unset_jwt_cookies(response)
+    flash("You have been logged out","warning")
     return response
-    
-    # return render_template("logout.html")
 
-
-@app.route('/test',methods=["POST","GET"])
-def test():
-    response=make_response("Hello world")
-    return response
 #add notes route
 @app.route('/create_note',methods=["POST","GET"])
 @jwt_required()
@@ -192,19 +186,19 @@ def refresh():
 @jwt_required()
 def update_note(note_id):
     user_id=int(get_jwt_identity())
-    print("User id for note to update: ",user_id)
+    # print("User id for note to update: ",user_id)
     note_to_update=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
-    print("Note to delete: ",note_to_update)
+    # print("Note to delete: ",note_to_update)
     form=NoteForm(obj=note_to_update)
      # or form.title.data=note_to_update.title
      #  form.body.data=note_to_update.body
     form.submit.label.text="Update Note"
-    print("Form: ",form)
+    # print("Form: ",form)
     if form.validate_on_submit():
         note_to_update.title=form.title.data
-        print("Title: ",note_to_update.title)
+        # print("Title: ",note_to_update.title)
         note_to_update.body=form.body.data
-        print("Body: ",note_to_update.body)
+        # print("Body: ",note_to_update.body)
         db.session.commit()
         return redirect(url_for("view_notes"))
     return render_template("update_note.html",form=form,note_to_update=note_to_update)
@@ -213,7 +207,7 @@ def update_note(note_id):
 @jwt_required()
 def delete_note(note_id):
     user_id=int(get_jwt_identity())
-    print("User id: ",user_id)
+    # print("User id: ",user_id)
     task_to_delete=Notes.query.filter_by(notes_id=note_id,user_id=user_id).first_or_404()
     db.session.delete(task_to_delete)
     db.session.commit()
@@ -222,24 +216,24 @@ def delete_note(note_id):
 @jwt_required()
 def view_notes():
     user_id=int(get_jwt_identity())
-    print("User id: ",user_id)
+    # print("User id: ",user_id)
     notes=Notes.query.filter_by(user_id=user_id).all()
     delete_form=DeleteForm()
     return render_template("view_notes.html",delete_form=delete_form,notes=notes)
 #strong password validator
 def strong_passsword(form,field):
     password=field.data
-    print("Password: ",password)
+    # print("Password: ",password)
     if len(password)<8:
-        print("Password must be atleast 8 characters long")
+        raise ValidationError("Password must be atleast 8 characters long","error")
     if not re.search(r"[A-Z]",password):
-        print("Password must contain atleast one uppercase letter")
+        raise ValidationError("Password must contain atleast one uppercase letter","error")
     if not re.search(r"[a-z]",password):
-        print("Password must contain atleastone lowercase letter")
+        raise ValidationError("Password must contain atleastone lowercase letter","error")
     if not re.search(r"\d",password):
-        print("Password must contain atleast onedigit")
+        raise ValidationError("Password must contain atleast one digit","error")
     if not re.search(r"[!@#%^&*]",password):
-        print("Password must contain atleast one special character")
+        raise ValidationError("Password must contain atleast one special character","error")
 
 #register form
 class RegisterForm(FlaskForm):
