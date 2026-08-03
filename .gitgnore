@@ -1,20 +1,23 @@
-# Virtual Environment
-*.env
-.env*
-# Ignore all .env files
+# =========================
+# Environment files
+# =========================
+
+# Ignore all .env files (real environment files)
 .env
 .env.local
 .env.*.local
 
-# But keep the example file
+# Keep the example file tracked
 !.env.example
+
+# Virtual environments
 env/
 venv/
-notes_env/
+.venv/
 ENV/
 env.bak/
 venv.bak/
-.venv/
+notes_env/
 jwt_env/
 users_data_env/
 # Jupyter Notebook
